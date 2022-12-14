@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User addUser(User user) throws DataExistException {
-        if (userRepository.getUserByEmail(user.getEmail()).isPresent()) {
+        if(userRepository.getUserByEmail(user.getEmail()).isPresent()) {
             throw new DataExistException(String.format("Пользователь с email %s уже есть в базе", user.getEmail()));
         } else {
             User userSaved = userRepository.addUser(user);
@@ -30,14 +30,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(long id, User user) throws DataExistException {
-        if (userRepository.getUserByEmail(user.getEmail()).isPresent()) {
+        if(userRepository.getUserByEmail(user.getEmail()).isPresent()) {
             throw new DataExistException(String.format("Пользователь с email %s уже есть в базе", user.getEmail()));
         } else {
             User targetUser = userRepository.getUserById(id);
-            if(StringUtils.hasLength(user.getEmail())) {
+            if (StringUtils.hasLength(user.getEmail())) {
                 targetUser.setEmail(user.getEmail());
             }
-            if(StringUtils.hasLength(user.getName())) {
+            if (StringUtils.hasLength(user.getName())) {
                 targetUser.setName(user.getName());
             }
             User userSaved = userRepository.updateUser(targetUser);
@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void removeUser(long id) {
-        if (userRepository.removeUser(id) == null) {
+        if(userRepository.removeUser(id) == null) {
             throw new ObjectNotFoundException(String.format("Пользователь с id %s не найден", id));
         } else {
             Logger.logSave(HttpMethod.DELETE, "/users/" + id, "Пользователь удален.");

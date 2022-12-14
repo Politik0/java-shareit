@@ -33,7 +33,7 @@ public class ItemServiceImpl implements ItemService {
     public Item updateItem(long userId, long itemId, Item item) {
         User user = userService.getUserById(userId);
         Item targetItem = itemRepository.getItemById(itemId);
-        if (targetItem.getUserId() != user.getId()) {
+        if(targetItem.getUserId() != user.getId()) {
             throw new ObjectNotFoundException(String.format("У пользователя с id %s не найдена вещь с id %s",
                     userId, itemId));
         } else {
@@ -74,7 +74,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<Item> searchItems(String text) {
         List<Item> items;
-        if (text.isBlank()) {
+        if(text.isBlank()) {
             items = new ArrayList<>();
         } else {
             items = itemRepository.searchItems(text.toLowerCase());
