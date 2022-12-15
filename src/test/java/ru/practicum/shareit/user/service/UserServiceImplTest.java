@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import ru.practicum.shareit.user.repository.InMemoryUserRepository;
 
 
-class UserServiceImplTest extends UserServiceTest<UserServiceImpl>{
+class UserServiceImplTest extends UserServiceTest<UserServiceImpl> {
 
     @BeforeEach
     void beforeAll() {

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
 abstract class UserServiceTest<T extends UserService> {
 
@@ -29,7 +30,7 @@ abstract class UserServiceTest<T extends UserService> {
         User userUpdated = new User(1, "user1@mail.ru", "UserName1Upd", new TreeSet<>());
         DataExistException e = assertThrows(DataExistException.class,
                 () -> userService.addUser(userUpdated));
-        assertEquals(e.getMessage(),"Пользователь с email user1@mail.ru уже есть в базе",
+        assertEquals(e.getMessage(), "Пользователь с email user1@mail.ru уже есть в базе",
                 "Не выбрасывается исключение при попытке добавть пользователя с существующим email");
     }
 

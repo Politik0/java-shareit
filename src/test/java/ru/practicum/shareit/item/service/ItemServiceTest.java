@@ -132,6 +132,6 @@ abstract class ItemServiceTest<T extends ItemService> {
         assertEquals("Вещь с id 2 не найдена", e.getMessage(),
                 "Не выбрасывается исключение, если передать id несуществующей вещи.");
         itemService.removeItem(1, 1);
-        assertEquals(0, itemService.getAllItems(1).size(),"Вещь удаляется.");
+        assertEquals(0, itemService.getAllItems(1).size(), "Вещь удаляется.");
     }
 }
