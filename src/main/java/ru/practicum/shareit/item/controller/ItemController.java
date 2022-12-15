@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/items")
 @AllArgsConstructor
 public class ItemController {
-    ItemService itemService;
-    ItemMapper itemMapper;
+    private final ItemService itemService;
+    private final ItemMapper itemMapper;
 
     @PostMapping
     public ItemDto addItem(@RequestHeader("X-Sharer-User-Id") long userId, @Valid @RequestBody ItemDto itemDto) {

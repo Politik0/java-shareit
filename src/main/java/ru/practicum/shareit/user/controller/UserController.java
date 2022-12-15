@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 @RequestMapping(path = "/users")
 @AllArgsConstructor
 public class UserController {
-    UserService userService;
-    UserMapper userMapper;
+    private final UserService userService;
+    private final UserMapper userMapper;
 
     @PostMapping
     public UserDto addUser(@Valid @RequestBody UserDto userDto) throws DataExistException {
