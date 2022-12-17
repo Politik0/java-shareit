@@ -1,16 +1,17 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.user.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Item {
+public class User {
     private long id;
-    private long userId;
+    private String email;
     private String name;
-    private String description;
-    private Boolean available;
+    private Set<Long> items;
 }
