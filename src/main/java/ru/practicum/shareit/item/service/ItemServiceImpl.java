@@ -39,7 +39,6 @@ public class ItemServiceImpl implements ItemService {
     private final BookingMapper bookingMapper;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
-    public final Sort SORT_BY_START_DESC = Sort.by(Sort.Direction.DESC, "start");
 
     @Override
     public Item addItem(long userId, Item item) {
@@ -80,7 +79,8 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId).orElseThrow(() ->
                 new ObjectNotFoundException(String.format("Вещь с id %s не найдена", itemId)));
         ItemDto itemDto = itemMapper.convertToDto(item);
-        List<Booking> bookings = bookingRepository.findByItem_Id(itemId, SORT_BY_START_DESC);
+        List<Booking> bookings = bookingRepository.findByItem_Id(itemId,
+                Sort.by(Sort.Direction.DESC, "start"));
         List<BookingDtoShort> bookingDtoShorts = bookings.stream()
                 .map(bookingMapper::convertToDtoShort)
                 .collect(Collectors.toList());
@@ -105,7 +105,8 @@ public class ItemServiceImpl implements ItemService {
                 .map(itemMapper::convertToDto)
                 .collect(Collectors.toList());
         Logger.logInfo(HttpMethod.GET, "/items",  items.toString());
-        List<Booking> bookings = bookingRepository.findAllByOwnerId(userId, SORT_BY_START_DESC);
+        List<Booking> bookings = bookingRepository.findAllByOwnerId(userId,
+                Sort.by(Sort.Direction.DESC, "start"));
         List<BookingDtoShort> bookingDtoShorts = bookings.stream()
                 .map(bookingMapper::convertToDtoShort)
                 .collect(Collectors.toList());
@@ -150,7 +151,7 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new ObjectNotFoundException(
                 String.format("Вещь с id %s не найдена", itemId)));
         List<Booking> bookings = bookingRepository.findAllByItem_IdAndBooker_IdAndStatus(itemId, userId, Status.APPROVED,
-                        SORT_BY_START_DESC).orElseThrow(() -> new ObjectNotFoundException(
+                Sort.by(Sort.Direction.DESC, "start")).orElseThrow(() -> new ObjectNotFoundException(
                                 String.format("Пользователь с id %d не арендовал вещь с id %d.", userId, itemId)));
         Logger.logInfo(HttpMethod.POST, "/items/" + itemId + "/comment", bookings.toString());
         bookings.stream().filter(booking -> booking.getEnd().isBefore(LocalDateTime.now())).findAny().orElseThrow(() ->

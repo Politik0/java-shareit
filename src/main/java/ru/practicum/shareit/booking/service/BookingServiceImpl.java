@@ -25,7 +25,6 @@ public class BookingServiceImpl implements BookingService {
     private final UserService userService;
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
-    private final Sort SORT_BY_START_DESC = Sort.by(Sort.Direction.DESC, "start");
 
     @Override
     public Booking addBooking(long bookerId, Booking booking) {
@@ -84,30 +83,31 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<Booking> getBookingsOfCurrentUser(State state, long bookerId) {
         User booker = userService.getUserById(bookerId);
+        Sort sort = Sort.by(Sort.Direction.DESC, "start");
         List<Booking> bookings;
         switch (state) {
             case WAITING:
                 bookings = bookingRepository.findAllByBooker_IdAndStatus(booker.getId(),
-                        Status.WAITING, SORT_BY_START_DESC);
+                        Status.WAITING, sort);
                 break;
             case REJECTED:
                 bookings = bookingRepository.findAllByBooker_IdAndStatus(booker.getId(),
-                        Status.REJECTED, SORT_BY_START_DESC);
+                        Status.REJECTED, sort);
                 break;
             case PAST:
                 bookings = bookingRepository.findAllByBooker_IdAndEndBefore(booker.getId(),
-                        LocalDateTime.now(), SORT_BY_START_DESC);
+                        LocalDateTime.now(), sort);
                 break;
             case FUTURE:
                 bookings = bookingRepository.findAllByBooker_IdAndStartAfter(booker.getId(),
-                        LocalDateTime.now(), SORT_BY_START_DESC);
+                        LocalDateTime.now(), sort);
                 break;
             case CURRENT:
                 bookings = bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfter(booker.getId(),
-                        LocalDateTime.now(), SORT_BY_START_DESC);
+                        LocalDateTime.now(), sort);
                 break;
             default:
-                bookings = bookingRepository.findAllByBooker_Id(booker.getId(), SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByBooker_Id(booker.getId(), sort);
         }
         Logger.logSave(HttpMethod.GET, "/bookings" + "?state=" + state, bookings.toString());
         return bookings;
@@ -116,30 +116,31 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<Booking> getBookingsOfOwner(State state, long ownerId) {
         User owner = userService.getUserById(ownerId);
+        Sort sort = Sort.by(Sort.Direction.DESC, "start");
         List<Booking> bookings;
         switch (state) {
             case WAITING:
                 bookings = bookingRepository.findAllByOwnerIdAndStatus(owner.getId(),
-                        Status.WAITING, SORT_BY_START_DESC);
+                        Status.WAITING, sort);
                 break;
             case REJECTED:
                 bookings = bookingRepository.findAllByOwnerIdAndStatus(owner.getId(),
-                        Status.REJECTED, SORT_BY_START_DESC);
+                        Status.REJECTED, sort);
                 break;
             case PAST:
                 bookings = bookingRepository.findAllByOwnerIdAndEndBefore(owner.getId(),
-                        LocalDateTime.now(), SORT_BY_START_DESC);
+                        LocalDateTime.now(), sort);
                 break;
             case FUTURE:
                 bookings = bookingRepository.findAllByOwnerIdAndStartAfter(owner.getId(),
-                        LocalDateTime.now(), SORT_BY_START_DESC);
+                        LocalDateTime.now(), sort);
                 break;
             case CURRENT:
                 bookings = bookingRepository.findAllByOwnerIdAndStartBeforeAndEndAfter(owner.getId(),
-                        LocalDateTime.now(), SORT_BY_START_DESC);
+                        LocalDateTime.now(), sort);
                 break;
             default:
-                bookings = bookingRepository.findAllByOwnerId(owner.getId(), SORT_BY_START_DESC);
+                bookings = bookingRepository.findAllByOwnerId(owner.getId(), sort);
         }
         Logger.logSave(HttpMethod.GET, "/bookings" + "/owner?state=" + state, bookings.toString());
         return bookings;
