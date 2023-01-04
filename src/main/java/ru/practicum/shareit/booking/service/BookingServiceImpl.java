@@ -25,7 +25,7 @@ public class BookingServiceImpl implements BookingService {
     private final UserService userService;
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
-    public final static Sort SORT_BY_START_DESC = Sort.by(Sort.Direction.DESC, "start");
+    private final Sort SORT_BY_START_DESC = Sort.by(Sort.Direction.DESC, "start");
 
     @Override
     public Booking addBooking(long bookerId, Booking booking) {
@@ -150,7 +150,7 @@ public class BookingServiceImpl implements BookingService {
                 || endBooking.isBefore(startBooking);
     }
 
-    private boolean isUnableToAccess (long userId, Booking booking, AccessLevel accessLevel) {
+    private boolean isUnableToAccess(long userId, Booking booking, AccessLevel accessLevel) {
         boolean isUnable = true;
         switch (accessLevel) {
             case OWNER:

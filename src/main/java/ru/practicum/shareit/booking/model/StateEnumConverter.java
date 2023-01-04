@@ -10,7 +10,7 @@ public class StateEnumConverter implements Converter<String, State> {
     public State convert(String source) {
         try {
             return State.valueOf(source);
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException(String.format("Unknown state: %S", source));
         }
     }
