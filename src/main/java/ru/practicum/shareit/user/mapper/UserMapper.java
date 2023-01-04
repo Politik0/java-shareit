@@ -11,8 +11,6 @@ public class UserMapper {
 
     public UserMapper() {
         modelMapper = new ModelMapper();
-        modelMapper.createTypeMap(UserDto.class, User.class)
-                .addMappings(modelMapper -> modelMapper.skip(User::setItems));
     }
 
     public UserDto convertToDto(User user) {
