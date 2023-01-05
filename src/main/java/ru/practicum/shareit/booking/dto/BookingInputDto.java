@@ -12,12 +12,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BookingInputDto {
-    long id;
-    long itemId;
+    private long id;
+    private long itemId;
     @FutureOrPresent(message = "Дата не должна быть в прошлом")
     @NotNull(message = "Дата не должна быть пустой")
-    LocalDateTime start;
+    private LocalDateTime start;
     @FutureOrPresent(message = "Дата не должна быть в прошлом")
     @NotNull(message = "Дата не должна быть пустой")
-    LocalDateTime end;
+    private LocalDateTime end;
 }

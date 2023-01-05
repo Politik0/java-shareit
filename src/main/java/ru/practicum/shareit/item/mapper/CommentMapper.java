@@ -9,9 +9,8 @@ import ru.practicum.shareit.item.model.Comment;
 public class CommentMapper {
     private final ModelMapper modelMapper;
 
-    CommentMapper() {
+    public CommentMapper() {
         modelMapper = new ModelMapper();
-        modelMapper.createTypeMap(CommentDto.class, Comment.class);
     }
 
     public CommentDto convertToDto(Comment comment) {
