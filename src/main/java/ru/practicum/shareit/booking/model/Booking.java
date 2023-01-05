@@ -17,20 +17,20 @@ import java.time.LocalDateTime;
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long id;
+    private long id;
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
-    Item item;
+    private Item item;
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booker_id")
-    User booker;
+    private User booker;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    Status status;
+    private Status status;
     @Column(name = "start_booking")
-    LocalDateTime start;
+    private LocalDateTime start;
     @Column(name = "end_booking")
-    LocalDateTime end;
+    private LocalDateTime end;
 }

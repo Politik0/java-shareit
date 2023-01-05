@@ -87,19 +87,19 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> bookings;
         switch (state) {
             case WAITING:
-                bookings = bookingRepository.findAllByBooker_IdAndStatus(booker.getId(),
+                bookings = bookingRepository.findAllByBookerIdAndStatus(booker.getId(),
                         Status.WAITING, sort);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findAllByBooker_IdAndStatus(booker.getId(),
+                bookings = bookingRepository.findAllByBookerIdAndStatus(booker.getId(),
                         Status.REJECTED, sort);
                 break;
             case PAST:
-                bookings = bookingRepository.findAllByBooker_IdAndEndBefore(booker.getId(),
+                bookings = bookingRepository.findAllByBookerIdAndEndBefore(booker.getId(),
                         LocalDateTime.now(), sort);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findAllByBooker_IdAndStartAfter(booker.getId(),
+                bookings = bookingRepository.findAllByBookerIdAndStartAfter(booker.getId(),
                         LocalDateTime.now(), sort);
                 break;
             case CURRENT:
@@ -107,7 +107,7 @@ public class BookingServiceImpl implements BookingService {
                         LocalDateTime.now(), sort);
                 break;
             default:
-                bookings = bookingRepository.findAllByBooker_Id(booker.getId(), sort);
+                bookings = bookingRepository.findAllByBookerId(booker.getId(), sort);
         }
         Logger.logSave(HttpMethod.GET, "/bookings" + "?state=" + state, bookings.toString());
         return bookings;

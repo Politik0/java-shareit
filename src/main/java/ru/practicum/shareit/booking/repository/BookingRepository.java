@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    List<Booking> findAllByBooker_Id(long bookerId, Sort sort);
+    List<Booking> findAllByBookerId(long bookerId, Sort sort);
 
-    List<Booking> findAllByBooker_IdAndStatus(long bookerId, Status status, Sort sort);
+    List<Booking> findAllByBookerIdAndStatus(long bookerId, Status status, Sort sort);
 
-    List<Booking> findAllByBooker_IdAndStartAfter(long bookerId, LocalDateTime localDateTime, Sort sort);
+    List<Booking> findAllByBookerIdAndStartAfter(long bookerId, LocalDateTime localDateTime, Sort sort);
 
-    List<Booking> findAllByBooker_IdAndEndBefore(long bookerId, LocalDateTime localDateTime, Sort sort);
+    List<Booking> findAllByBookerIdAndEndBefore(long bookerId, LocalDateTime localDateTime, Sort sort);
 
     @Query(value = "select b from Booking b where b.booker.id = ?1 and b.start < ?2 and b.end > ?2")
     List<Booking> findAllByBookerIdAndStartBeforeAndEndAfter(long bookerId, LocalDateTime localDateTime, Sort sort);
@@ -37,7 +37,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query(value = "select b from Booking b where b.item.userId = ?1 and b.start < ?2 and b.end > ?2")
     List<Booking> findAllByOwnerIdAndStartBeforeAndEndAfter(long bookerId, LocalDateTime localDateTime, Sort sort);
 
-    List<Booking>  findByItem_Id(long itemId, Sort sort);
+    List<Booking> findByItemId(long itemId, Sort sort);
 
-    Optional<List<Booking>> findAllByItem_IdAndBooker_IdAndStatus(long itemId, long bookerId, Status status, Sort sort);
+    Optional<List<Booking>> findAllByItemIdAndBookerIdAndStatus(long itemId, long bookerId, Status status, Sort sort);
 }
