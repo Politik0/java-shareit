@@ -3,8 +3,11 @@ package ru.practicum.shareit.item.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.logger.Logger;
@@ -19,6 +22,7 @@ import java.util.stream.Collectors;
 public class ItemController {
     private final ItemService itemService;
     private final ItemMapper itemMapper;
+    private final CommentMapper commentMapper;
 
     @PostMapping
     public ItemDto addItem(@RequestHeader("X-Sharer-User-Id") long userId, @Valid @RequestBody ItemDto itemDto) {
@@ -28,17 +32,15 @@ public class ItemController {
     }
 
     @GetMapping("{itemId}")
-    public ItemDto getItem(@PathVariable long itemId) {
+    public ItemDto getItem(@PathVariable long itemId, @RequestHeader("X-Sharer-User-Id") long userId) {
         Logger.logRequest(HttpMethod.GET, "/items/" + itemId, "пусто");
-        return itemMapper.convertToDto(itemService.getItemById(itemId));
+        return itemService.getItemById(itemId, userId);
     }
 
-    @GetMapping
+    @GetMapping     // Просмотр владельцем списка всех его вещей с указанием названия и описания для каждой
     public List<ItemDto> getAllItems(@RequestHeader("X-Sharer-User-Id") long userId) {
         Logger.logRequest(HttpMethod.GET, "/items", "пусто");
-        return itemService.getAllItems(userId).stream()
-                .map(itemMapper::convertToDto)
-                .collect(Collectors.toList());
+        return itemService.getAllItems(userId);
     }
 
     @GetMapping("/search")
@@ -60,5 +62,13 @@ public class ItemController {
     public void removeItem(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId) {
         Logger.logRequest(HttpMethod.DELETE, "/items/" + itemId, "пусто");
         itemService.removeItem(userId, itemId);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId,
+                              @RequestBody @Valid CommentDto commentDto) {
+        Logger.logRequest(HttpMethod.POST, "/items/" + itemId + "/comment", commentDto.toString());
+        Comment comment = commentMapper.convertFromDto(commentDto);
+        return commentMapper.convertToDto(itemService.addComment(userId, itemId, comment));
     }
 }
