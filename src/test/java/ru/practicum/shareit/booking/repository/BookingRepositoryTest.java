@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@AutoConfigureTestDatabase
 class BookingRepositoryTest {
     @Autowired
     private TestEntityManager em;
@@ -29,7 +29,7 @@ class BookingRepositoryTest {
     private Item item;
     private Booking booking;
 
-    void create() {
+    void createOwner() {
         owner = User.builder()
                 .name("UserName")
                 .email("name@mail.ru")
@@ -37,7 +37,9 @@ class BookingRepositoryTest {
         assertEquals(owner.getId(), 0);
         em.persist(owner);
         assertNotEquals(owner.getId(), 0);
+    }
 
+    void createBooker() {
         booker = User.builder()
                 .name("bookerName")
                 .email("booker@mail.ru")
@@ -45,7 +47,9 @@ class BookingRepositoryTest {
         assertEquals(booker.getId(), 0);
         em.persist(booker);
         assertNotEquals(booker.getId(), 0);
+    }
 
+    void createItem() {
         item = Item.builder()
                 .name("ItemName")
                 .description("Descr for item")
@@ -54,13 +58,14 @@ class BookingRepositoryTest {
                 .build();
         assertEquals(item.getId(), 0);
         em.persist(item);
-        em.flush();
         assertNotEquals(item.getId(), 0);
     }
 
     @Test
     void findAllByOwnerId() {
-        create();
+        createOwner();
+        createBooker();
+        createItem();
         booking = Booking.builder()
                 .item(item)
                 .booker(booker)
@@ -80,32 +85,9 @@ class BookingRepositoryTest {
 
     @Test
     void findAllByOwnerIdAndStatus() {
-        owner = User.builder()
-                .name("UserName")
-                .email("name@mail.ru")
-                .build();
-        assertEquals(owner.getId(), 0);
-        em.persist(owner);
-        assertNotEquals(owner.getId(), 0);
-
-        booker = User.builder()
-                .name("bookerName")
-                .email("booker@mail.ru")
-                .build();
-        assertEquals(booker.getId(), 0);
-        em.persist(booker);
-        assertNotEquals(booker.getId(), 0);
-
-        item = Item.builder()
-                .name("ItemName")
-                .description("Descr for item")
-                .userId(owner.getId())
-                .available(true)
-                .build();
-        assertEquals(item.getId(), 0);
-        em.persist(item);
-        em.flush();
-        assertNotEquals(item.getId(), 0);
+        createOwner();
+        createBooker();
+        createItem();
         booking = Booking.builder()
                 .item(item)
                 .booker(booker)
@@ -128,7 +110,9 @@ class BookingRepositoryTest {
 
     @Test
     void findAllByOwnerIdAndStartAfter() {
-        create();
+        createOwner();
+        createBooker();
+        createItem();
         booking = Booking.builder()
                 .item(item)
                 .booker(booker)

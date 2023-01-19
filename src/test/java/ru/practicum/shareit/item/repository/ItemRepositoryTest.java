@@ -15,12 +15,14 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@AutoConfigureTestDatabase
 class ItemRepositoryTest {
     @Autowired
     private TestEntityManager em;
     @Autowired
     private ItemRepository repository;
+
+
 
     @Test
     void findByNameOrDescriptionLike() {
@@ -37,6 +39,7 @@ class ItemRepositoryTest {
                 .name("Name")
                 .description("Descr for item")
                 .available(true)
+                .request(null)
                 .build();
 
         assertEquals(item.getId(), 0);

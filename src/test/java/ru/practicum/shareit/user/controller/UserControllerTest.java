@@ -108,7 +108,6 @@ class UserControllerTest {
 
     @Test
     void removeUser() throws Exception {
-
         mvc.perform(get("/users"))
                 .andExpect(status().isOk());
     }
