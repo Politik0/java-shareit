@@ -11,7 +11,7 @@ import ru.practicum.shareit.booking.model.Booking;
 public class BookingMapper {
     private final ModelMapper modelMapper;
 
-    BookingMapper() {
+    public BookingMapper() {
         modelMapper = new ModelMapper();
     }
 

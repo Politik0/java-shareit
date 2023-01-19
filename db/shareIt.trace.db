@@ -1,0 +1,3 @@
+2023-01-08 17:28:08 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "REQUESTS" not found; SQL statement:
+insert into requests (user_id, created, description) values (?, ?, ?) [42102-214]

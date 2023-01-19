@@ -19,37 +19,32 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserController {
     private final UserService userService;
-    private final UserMapper userMapper;
 
     @PostMapping
     public UserDto addUser(@Valid @RequestBody UserDto userDto) throws DataExistException {
         Logger.logRequest(HttpMethod.POST, "/users", userDto.toString());
-        User user = userMapper.convertFromDto(userDto);
-        return userMapper.convertToDto(userService.addUser(user));
+        return userService.addUser(userDto);
     }
 
-    @GetMapping("{userId}")
+    @PatchMapping("/{userId}")
+    public UserDto updateUser(@PathVariable long userId, @RequestBody UserDto userDto) throws DataExistException {
+        Logger.logRequest(HttpMethod.PATCH, "/users/" + userId, userDto.toString());
+        return userService.updateUser(userId, userDto);
+    }
+
+    @GetMapping("/{userId}")
     public UserDto getUserById(@PathVariable long userId) {
         Logger.logRequest(HttpMethod.GET, "/users/" + userId, "пусто");
-        return userMapper.convertToDto(userService.getUserById(userId));
+        return userService.getUserById(userId);
     }
 
     @GetMapping
     public List<UserDto> getAllUsers() throws DataExistException {
         Logger.logRequest(HttpMethod.GET, "/users", "пусто");
-        return userService.getAllUsers().stream()
-                .map(userMapper::convertToDto)
-                .collect(Collectors.toList());
+        return userService.getAllUsers();
     }
 
-    @PatchMapping("{userId}")
-    public UserDto updateUser(@PathVariable long userId, @RequestBody UserDto userDto) throws DataExistException {
-        Logger.logRequest(HttpMethod.PATCH, "/users/" + userId, userDto.toString());
-        User user = userMapper.convertFromDto(userDto);
-        return userMapper.convertToDto(userService.updateUser(userId, user));
-    }
-
-    @DeleteMapping("{userId}")
+    @DeleteMapping("/{userId}")
     public void removeUser(@PathVariable long userId) {
         Logger.logRequest(HttpMethod.DELETE, "/users/" + userId, "пусто");
         userService.removeUser(userId);

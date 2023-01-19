@@ -1,6 +1,9 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -20,8 +23,10 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.logger.Logger;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.repository.UserRepository;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -33,25 +38,32 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
-    private final UserService userService;
     private final BookingRepository bookingRepository;
     private final ItemMapper itemMapper;
     private final BookingMapper bookingMapper;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
+    private final ItemRequestRepository itemRequestRepository;
+    private final UserRepository userRepository;
 
     @Override
-    public Item addItem(long userId, Item item) {
-        User user = userService.getUserById(userId);
+    public ItemDto addItem(long userId, ItemDto itemDto) {
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new ObjectNotFoundException(String.format("Пользователь с id %s не найден", userId)));
+        ItemRequest itemRequest = itemRequestRepository.findById(itemDto.getRequestId());
+        Item item = itemMapper.convertFromDto(itemDto);
         item.setUserId(user.getId());
+        item.setRequest(itemRequest);
         Item itemSaved = itemRepository.save(item);
         Logger.logSave(HttpMethod.POST, "/items", itemSaved.toString());
-        return itemSaved;
+        return itemMapper.convertToDto(itemSaved);
     }
 
     @Override
-    public Item updateItem(long userId, long itemId, Item item) {
-        User user = userService.getUserById(userId);
+    public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
+        Item item = itemMapper.convertFromDto(itemDto);
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new ObjectNotFoundException(String.format("Пользователь с id %s не найден", userId)));
         Item targetItem = itemRepository.findById(itemId).orElseThrow(() ->
                 new ObjectNotFoundException(String.format("Вещь с id %s не найдена", itemId)));
         if (targetItem.getUserId() != user.getId()) {
@@ -69,13 +81,14 @@ public class ItemServiceImpl implements ItemService {
             }
             Item itemSaved = itemRepository.save(targetItem);
             Logger.logSave(HttpMethod.PATCH, "/items/" + itemId, itemSaved.toString());
-            return itemSaved;
+            return itemMapper.convertToDto(itemSaved);
         }
     }
 
     @Override
     public ItemDto getItemById(long itemId, long userId) {
-        userService.getUserById(userId);
+        userRepository.findById(userId).orElseThrow(() ->
+                new ObjectNotFoundException(String.format("Пользователь с id %s не найден", userId)));
         Item item = itemRepository.findById(itemId).orElseThrow(() ->
                 new ObjectNotFoundException(String.format("Вещь с id %s не найдена", itemId)));
         ItemDto itemDto = itemMapper.convertToDto(item);
@@ -98,19 +111,20 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getAllItems(long userId) {
-        User user = userService.getUserById(userId);
-        List<Item> items = itemRepository.findAllByUserIdOrderById(user.getId());
+    public List<ItemDto> getAllItems(long userId, int from, int size) {
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new ObjectNotFoundException(String.format("Пользователь с id %s не найден", userId)));
+        Pageable sortedByStart = PageRequest.of(from / size, size, Sort.by("start").descending());
+        Page<Item> items = itemRepository.findAllByUserIdOrderById(user.getId(), PageRequest.of(from / size, size));
         List<ItemDto> itemsDto = items.stream()
                 .map(itemMapper::convertToDto)
                 .collect(Collectors.toList());
-        Logger.logInfo(HttpMethod.GET, "/items",  items.toString());
-        List<Booking> bookings = bookingRepository.findAllByOwnerId(userId,
-                Sort.by(Sort.Direction.DESC, "start"));
+        Logger.logInfo(HttpMethod.GET, "/items", items.toString());
+        Page<Booking> bookings = bookingRepository.findAllByOwnerId(userId, sortedByStart);
         List<BookingDtoShort> bookingDtoShorts = bookings.stream()
                 .map(bookingMapper::convertToDtoShort)
                 .collect(Collectors.toList());
-        Logger.logInfo(HttpMethod.GET, "/items",  bookings.toString());
+        Logger.logInfo(HttpMethod.GET, "/items", bookings.toString());
         List<Comment> comments = commentRepository.findAllByItemIdIn(
                 items.stream()
                         .map(Item::getId)
@@ -125,20 +139,24 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> searchItems(String text) {
+    public List<ItemDto> searchItems(String text, int from, int size) {
         List<Item> items;
         if (text.isBlank()) {
             items = new ArrayList<>();
         } else {
-            items = itemRepository.findByNameOrDescriptionLike(text.toLowerCase());
+            items = itemRepository.findByNameOrDescriptionLike(text.toLowerCase(), PageRequest.of(from / size, size))
+                    .stream().collect(Collectors.toList());
         }
         Logger.logSave(HttpMethod.GET, "/items/search?text=" + text, items.toString());
-        return items;
+        return items.stream()
+                .map(itemMapper::convertToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void removeItem(long userId, long itemId) {
-        userService.getUserById(userId);
+        userRepository.findById(userId).orElseThrow(() ->
+                new ObjectNotFoundException(String.format("Пользователь с id %s не найден", userId)));
         Item item = itemRepository.findById(itemId).orElseThrow(() ->
                 new ObjectNotFoundException(String.format("Вещь с id %s не найдена", itemId)));
         itemRepository.deleteById(item.getId());
@@ -146,13 +164,15 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Comment addComment(long userId, long itemId, Comment comment) {
-        User user = userService.getUserById(userId);
+    public CommentDto addComment(long userId, long itemId, CommentDto commentDto) {
+        Comment comment = commentMapper.convertFromDto(commentDto);
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new ObjectNotFoundException(String.format("Пользователь с id %s не найден", userId)));
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new ObjectNotFoundException(
                 String.format("Вещь с id %s не найдена", itemId)));
         List<Booking> bookings = bookingRepository.findAllByItemIdAndBookerIdAndStatus(itemId, userId, Status.APPROVED,
                 Sort.by(Sort.Direction.DESC, "start")).orElseThrow(() -> new ObjectNotFoundException(
-                                String.format("Пользователь с id %d не арендовал вещь с id %d.", userId, itemId)));
+                String.format("Пользователь с id %d не арендовал вещь с id %d.", userId, itemId)));
         Logger.logInfo(HttpMethod.POST, "/items/" + itemId + "/comment", bookings.toString());
         bookings.stream().filter(booking -> booking.getEnd().isBefore(LocalDateTime.now())).findAny().orElseThrow(() ->
                 new ObjectNotAvailableException(String.format("Пользователь с id %d не может оставлять комментарии вещи " +
@@ -162,7 +182,7 @@ public class ItemServiceImpl implements ItemService {
         comment.setCreated(LocalDateTime.now());
         Comment commentSaved = commentRepository.save(comment);
         Logger.logSave(HttpMethod.POST, "/items/" + itemId + "/comment", commentSaved.toString());
-        return commentSaved;
+        return commentMapper.convertToDto(commentSaved);
     }
 
     private void setBookings(ItemDto itemDto, List<BookingDtoShort> bookings) {

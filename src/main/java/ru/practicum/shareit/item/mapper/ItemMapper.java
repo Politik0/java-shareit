@@ -9,7 +9,7 @@ import ru.practicum.shareit.item.model.Item;
 public class ItemMapper {
     private final ModelMapper modelMapper;
 
-    ItemMapper() {
+    public ItemMapper() {
         modelMapper = new ModelMapper();
         modelMapper.createTypeMap(ItemDto.class, Item.class)
                 .addMappings(modelMapper -> modelMapper.skip(Item::setUserId));
