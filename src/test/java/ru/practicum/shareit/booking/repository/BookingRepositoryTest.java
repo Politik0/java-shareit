@@ -29,7 +29,7 @@ class BookingRepositoryTest {
     private Item item;
     private Booking booking;
 
-    void createOwner() {
+    void create() {
         owner = User.builder()
                 .name("UserName")
                 .email("name@mail.ru")
@@ -37,9 +37,7 @@ class BookingRepositoryTest {
         assertEquals(owner.getId(), 0);
         em.persist(owner);
         assertNotEquals(owner.getId(), 0);
-    }
 
-    void createBooker() {
         booker = User.builder()
                 .name("bookerName")
                 .email("booker@mail.ru")
@@ -47,9 +45,7 @@ class BookingRepositoryTest {
         assertEquals(booker.getId(), 0);
         em.persist(booker);
         assertNotEquals(booker.getId(), 0);
-    }
 
-    void createItem() {
         item = Item.builder()
                 .name("ItemName")
                 .description("Descr for item")
@@ -63,9 +59,7 @@ class BookingRepositoryTest {
 
     @Test
     void findAllByOwnerId() {
-        createOwner();
-        createBooker();
-        createItem();
+        create();
         booking = Booking.builder()
                 .item(item)
                 .booker(booker)
@@ -85,9 +79,7 @@ class BookingRepositoryTest {
 
     @Test
     void findAllByOwnerIdAndStatus() {
-        createOwner();
-        createBooker();
-        createItem();
+        create();
         booking = Booking.builder()
                 .item(item)
                 .booker(booker)
@@ -110,9 +102,7 @@ class BookingRepositoryTest {
 
     @Test
     void findAllByOwnerIdAndStartAfter() {
-        createOwner();
-        createBooker();
-        createItem();
+        create();
         booking = Booking.builder()
                 .item(item)
                 .booker(booker)
