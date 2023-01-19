@@ -54,6 +54,7 @@ class BookingRepositoryTest {
                 .build();
         assertEquals(item.getId(), 0);
         em.persist(item);
+        em.flush();
         assertNotEquals(item.getId(), 0);
     }
 
@@ -79,7 +80,32 @@ class BookingRepositoryTest {
 
     @Test
     void findAllByOwnerIdAndStatus() {
-        create();
+        owner = User.builder()
+                .name("UserName")
+                .email("name@mail.ru")
+                .build();
+        assertEquals(owner.getId(), 0);
+        em.persist(owner);
+        assertNotEquals(owner.getId(), 0);
+
+        booker = User.builder()
+                .name("bookerName")
+                .email("booker@mail.ru")
+                .build();
+        assertEquals(booker.getId(), 0);
+        em.persist(booker);
+        assertNotEquals(booker.getId(), 0);
+
+        item = Item.builder()
+                .name("ItemName")
+                .description("Descr for item")
+                .userId(owner.getId())
+                .available(true)
+                .build();
+        assertEquals(item.getId(), 0);
+        em.persist(item);
+        em.flush();
+        assertNotEquals(item.getId(), 0);
         booking = Booking.builder()
                 .item(item)
                 .booker(booker)
