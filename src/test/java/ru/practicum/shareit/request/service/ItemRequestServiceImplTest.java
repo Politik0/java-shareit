@@ -5,12 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.practicum.shareit.exception.ObjectNotFoundException;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import javax.transaction.Transactional;
 
@@ -30,6 +32,12 @@ class ItemRequestServiceImplTest {
         ItemRequestDto itemRequestDto = ItemRequestDto.builder()
                 .description("Хотел бы воспользоваться щёткой для обуви")
                 .build();
+
+        ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+                () -> itemRequestService.createItemRequest(99L, itemRequestDto));
+        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e.getMessage(),
+                equalTo("Пользователь с id 99 не найден"));
+
         ItemRequestDto itemRequestDtoSaved = itemRequestService.createItemRequest(userDtoInDB.getId(), itemRequestDto);
         assertThat("Запрос сохраняется неверно", itemRequestDto.getDescription(),
                 equalTo(itemRequestDtoSaved.getDescription()));
@@ -50,6 +58,11 @@ class ItemRequestServiceImplTest {
                 userDtoInDB2.getId(), 0, 10);
         assertThat("Список запросов владельца возвращается неверно", requestsForUser1.size(), equalTo(1));
         assertThat("Список запросов владельца возвращается неверно", requestsForUser2.size(), equalTo(0));
+
+        ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+                () -> itemRequestService.getItemRequestsByAuthor(99L, 0, 10));
+        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e.getMessage(),
+                equalTo("Пользователь с id 99 не найден"));
     }
 
     @Test
@@ -79,6 +92,19 @@ class ItemRequestServiceImplTest {
         ItemRequestDto itemRequestDtoInDB = itemRequestService.getItemRequestById(userDtoInDB.getId(),
                 itemRequestDtoSaved.getId());
         assertThat("Запрос возвращается не верно", itemRequestDtoInDB.getId(), equalTo(itemRequestDtoInDB.getId()));
+
+        ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+                () -> itemRequestService.getItemRequestById(userDtoInDB.getId(), 99L));
+        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e.getMessage(),
+                equalTo("Запрос с id 99 не найден"));
+    }
+
+    @Test
+    void getItemRequestByIdWithException() {
+        ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+                () -> itemRequestService.getItemRequestById(99L, 1L));
+        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e.getMessage(),
+                equalTo("Пользователь с id 99 не найден"));
     }
 
     UserDto createUserDto(String name, String email) {

@@ -9,7 +9,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import ru.practicum.shareit.exception.DataExistException;
+import ru.practicum.shareit.exception.ErrorHandler;
+import ru.practicum.shareit.exception.ObjectNotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -40,6 +44,7 @@ class UserControllerTest {
     void beforeEach() {
         mvc = MockMvcBuilders
                 .standaloneSetup(userController)
+                .setControllerAdvice(ErrorHandler.class)
                 .build();
 
         userDto = UserDto.builder()
@@ -62,6 +67,48 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.id", is(userDto.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(userDto.getName())))
                 .andExpect(jsonPath("$.email", is(userDto.getEmail())));
+    }
+
+    @Test
+    void saveNewUserWithException() throws Exception {
+        when(userService.addUser(any()))
+                .thenThrow(DataExistException.class);
+
+        mvc.perform(post("/users")
+                        .content(mapper.writeValueAsString(userDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(409));
+    }
+
+    @Test
+    void updateUserWithException() throws Exception {
+        when(userService.updateUser(anyLong(), any()))
+                .thenThrow(ObjectNotFoundException.class);
+
+        mvc.perform(patch("/users/{userId}", 1L)
+                        .content(mapper.writeValueAsString(userDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(404));
+    }
+
+    @Test
+    void updateUserWithDataExistException() throws Exception {
+        when(userService.updateUser(anyLong(), any()))
+                .thenThrow(DataExistException.class);
+
+        mvc.perform(patch("/users/{userId}", 1L)
+                        .content(mapper.writeValueAsString(userDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(409));
     }
 
     @Test
@@ -89,6 +136,16 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.id").value(userDto.getId()))
                 .andExpect(jsonPath("$.name").value(userDto.getName()))
                 .andExpect(jsonPath("$.email").value(userDto.getEmail()));
+    }
+
+    @Test
+    void getUserByIdWithException() throws Exception {
+        when(userService.getUserById(anyLong()))
+                .thenThrow(ObjectNotFoundException.class);
+
+        mvc.perform(get("/users/{userId}", 1L))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(404));
     }
 
     @Test

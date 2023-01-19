@@ -9,7 +9,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import ru.practicum.shareit.exception.ErrorHandler;
+import ru.practicum.shareit.exception.ObjectNotFoundException;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
@@ -40,6 +43,7 @@ class ItemRequestControllerTest {
     void beforeEach() {
         mvc = MockMvcBuilders
                 .standaloneSetup(requestController)
+                .setControllerAdvice(ErrorHandler.class)
                 .build();
 
         requestDto = ItemRequestDto.builder()
@@ -72,6 +76,21 @@ class ItemRequestControllerTest {
     }
 
     @Test
+    void createItemRequestWithException() throws Exception {
+        when(requestService.createItemRequest(anyLong(), any()))
+                .thenThrow(ObjectNotFoundException.class);
+
+        mvc.perform(post("/requests")
+                        .content(mapper.writeValueAsString(requestDtoNew))
+                        .header("X-Sharer-User-Id", 1)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(404));
+    }
+
+    @Test
     void getItemRequestsByAuthor() throws Exception {
         List<ItemRequestDto> requests = new ArrayList<>();
         requests.add(requestDto);
@@ -86,6 +105,17 @@ class ItemRequestControllerTest {
                 .andExpect(jsonPath("$.[0].authorId", is(requestDto.getAuthorId()), Long.class))
                 .andExpect(jsonPath("$.[0].description", is(requestDto.getDescription())))
                 .andExpect(jsonPath("$.[0].created").isNotEmpty());
+    }
+
+    @Test
+    void getItemRequestsByAuthorWithException() throws Exception {
+        when(requestService.getItemRequestsByAuthor(anyLong(), anyInt(), anyInt()))
+                .thenThrow(ObjectNotFoundException.class);
+
+        mvc.perform(get("/requests?from={from}&size={size}", 0, 10)
+                        .header("X-Sharer-User-Id", 1))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(404));
     }
 
     @Test
@@ -117,5 +147,16 @@ class ItemRequestControllerTest {
                 .andExpect(jsonPath("$.authorId", is(requestDto.getAuthorId()), Long.class))
                 .andExpect(jsonPath("$.description", is(requestDto.getDescription())))
                 .andExpect(jsonPath("$.created").isNotEmpty());
+    }
+
+    @Test
+    void getItemRequestByIdWithException() throws Exception {
+        when(requestService.getItemRequestById(anyLong(), anyLong()))
+                .thenThrow(ObjectNotFoundException.class);
+
+        mvc.perform(get("/requests/{requestId}", 1)
+                        .header("X-Sharer-User-Id", 1))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(404));
     }
 }
