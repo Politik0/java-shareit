@@ -35,7 +35,7 @@ class ItemRequestServiceImplTest {
 
         ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
                 () -> itemRequestService.createItemRequest(99L, itemRequestDto));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e.getMessage(),
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
                 equalTo("Пользователь с id 99 не найден"));
 
         ItemRequestDto itemRequestDtoSaved = itemRequestService.createItemRequest(userDtoInDB.getId(), itemRequestDto);
@@ -61,7 +61,7 @@ class ItemRequestServiceImplTest {
 
         ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
                 () -> itemRequestService.getItemRequestsByAuthor(99L, 0, 10));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e.getMessage(),
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
                 equalTo("Пользователь с id 99 не найден"));
     }
 
@@ -95,7 +95,7 @@ class ItemRequestServiceImplTest {
 
         ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
                 () -> itemRequestService.getItemRequestById(userDtoInDB.getId(), 99L));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e.getMessage(),
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
                 equalTo("Запрос с id 99 не найден"));
     }
 
@@ -103,7 +103,7 @@ class ItemRequestServiceImplTest {
     void getItemRequestByIdWithException() {
         ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
                 () -> itemRequestService.getItemRequestById(99L, 1L));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e.getMessage(),
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
                 equalTo("Пользователь с id 99 не найден"));
     }
 

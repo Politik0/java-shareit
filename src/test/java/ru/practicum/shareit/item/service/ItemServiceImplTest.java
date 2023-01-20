@@ -47,7 +47,7 @@ class ItemServiceImplTest {
 
         ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
                 () -> itemService.addItem(99L, itemDto));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e.getMessage(),
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
                 equalTo("Пользователь с id 99 не найден"));
 
         ItemDto itemDtoSaved = itemService.addItem(userDtoInDB.getId(), itemDto);
@@ -58,7 +58,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void updateItem() {
+    void updateItemAvailable() {
         UserDto userDtoInDB = createUserDto("NameForUser1", "user@mail.ru");
         ItemDto itemDto = createItemDto("Item1", "Description for item1", true);
         ItemDto itemDtoSaved = itemService.addItem(userDtoInDB.getId(), itemDto);
@@ -66,18 +66,42 @@ class ItemServiceImplTest {
 
         ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
                 () -> itemService.updateItem(99L, itemDtoSaved.getId(), itemDtoNew));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e.getMessage(),
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
                 equalTo("Пользователь с id 99 не найден"));
 
         ObjectNotFoundException e2 = assertThrows(ObjectNotFoundException.class,
                 () -> itemService.updateItem(userDtoInDB.getId(), 99L, itemDtoNew));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e2.getMessage(),
+        assertThat("Нет ошибки при неверном id", e2.getMessage(),
                 equalTo("Вещь с id 99 не найдена"));
 
         ItemDto itemDtoNewSaved = itemService.updateItem(userDtoInDB.getId(), itemDtoSaved.getId(), itemDtoNew);
         assertThat("Вещь обновляется неверно", itemDtoNewSaved.getAvailable(), equalTo(false));
         assertThat("Вещь обновляется неверно", itemDtoNewSaved.getName(), equalTo("Item1"));
         assertThat("Вещь обновляется неверно", itemDtoNewSaved.getDescription(), notNullValue());
+    }
+
+    @Test
+    void updateItemName() {
+        UserDto userDtoInDB = createUserDto("NameForUser1", "user@mail.ru");
+        ItemDto itemDto = createItemDto("Item1", "Description for item1", true);
+        ItemDto itemDtoSaved = itemService.addItem(userDtoInDB.getId(), itemDto);
+        ItemDto itemDtoNew = ItemDto.builder().name("UpdName").build();
+        ItemDto itemDtoNewSaved = itemService.updateItem(userDtoInDB.getId(), itemDtoSaved.getId(), itemDtoNew);
+        assertThat("Вещь обновляется неверно", itemDtoNewSaved.getAvailable(), equalTo(true));
+        assertThat("Вещь обновляется неверно", itemDtoNewSaved.getName(), equalTo("UpdName"));
+        assertThat("Вещь обновляется неверно", itemDtoNewSaved.getDescription(), notNullValue());
+    }
+
+    @Test
+    void updateItemDescription() {
+        UserDto userDtoInDB = createUserDto("NameForUser1", "user@mail.ru");
+        ItemDto itemDto = createItemDto("Item1", "Description for item1", true);
+        ItemDto itemDtoSaved = itemService.addItem(userDtoInDB.getId(), itemDto);
+        ItemDto itemDtoNew = ItemDto.builder().description("UpdDescr").build();
+        ItemDto itemDtoNewSaved = itemService.updateItem(userDtoInDB.getId(), itemDtoSaved.getId(), itemDtoNew);
+        assertThat("Вещь обновляется неверно", itemDtoNewSaved.getAvailable(), equalTo(true));
+        assertThat("Вещь обновляется неверно", itemDtoNewSaved.getName(), equalTo("Item1"));
+        assertThat("Вещь обновляется неверно", itemDtoNewSaved.getDescription(), equalTo("UpdDescr"));
     }
 
     @Test
@@ -88,12 +112,12 @@ class ItemServiceImplTest {
 
         ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
                 () -> itemService.getItemById(itemDtoSaved.getId(), 99L));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e.getMessage(),
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
                 equalTo("Пользователь с id 99 не найден"));
 
         ObjectNotFoundException e2 = assertThrows(ObjectNotFoundException.class,
                 () -> itemService.getItemById(99L, userDtoInDB.getId()));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e2.getMessage(),
+        assertThat("Нет ошибки при неверном id", e2.getMessage(),
                 equalTo("Вещь с id 99 не найдена"));
 
         ItemDto itemDtoInDB = itemService.getItemById(itemDtoSaved.getId(), userDtoInDB.getId());
@@ -110,7 +134,7 @@ class ItemServiceImplTest {
 
         ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
                 () -> itemService.getAllItems(99L, 2, 10));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e.getMessage(),
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
                 equalTo("Пользователь с id 99 не найден"));
 
         List<ItemDto> items = itemService.getAllItems(userDtoInDB1.getId(), 2, 10);
@@ -138,6 +162,17 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void searchItemsWhenTestIsEmpty() {
+        UserDto userDtoInDB1 = createUserDto("NameForUser1", "user@mail.ru");
+        ItemDto drel = createItemDto("Дрель", "Простая дрель", true);
+        ItemDto itemDto1 = createItemDto("Item1", "Description for item1", true);
+        itemService.addItem(userDtoInDB1.getId(), drel);
+        itemService.addItem(userDtoInDB1.getId(), itemDto1);
+        List<ItemDto> items = itemService.searchItems("", 0, 10);
+        assertThat("Поиск вещи не корректный", items.size(), equalTo(0));
+    }
+
+    @Test
     void removeItem() {
         UserDto userDtoInDB1 = createUserDto("NameForUser1", "user@mail.ru");
         List<ItemDto> items = itemService.getAllItems(userDtoInDB1.getId(), 0, 10);
@@ -152,12 +187,12 @@ class ItemServiceImplTest {
 
         ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
                 () -> itemService.removeItem(99L, itemDtoSaved.getId()));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e.getMessage(),
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
                 equalTo("Пользователь с id 99 не найден"));
 
         ObjectNotFoundException e2 = assertThrows(ObjectNotFoundException.class,
                 () -> itemService.removeItem(userDtoInDB1.getId(), 99L));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e2.getMessage(),
+        assertThat("Нет ошибки при неверном id", e2.getMessage(),
                 equalTo("Вещь с id 99 не найдена"));
     }
 
@@ -176,12 +211,12 @@ class ItemServiceImplTest {
 
         ObjectNotFoundException e2 = assertThrows(ObjectNotFoundException.class,
                 () -> itemService.addComment(99L, itemDtoSaved.getId(), commentDto));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e2.getMessage(),
+        assertThat("Нет ошибки при неверном id", e2.getMessage(),
                 equalTo("Пользователь с id 99 не найден"));
 
         ObjectNotFoundException e3 = assertThrows(ObjectNotFoundException.class,
                 () -> itemService.addComment(userDtoInDB1.getId(), 99L, commentDto));
-        assertThat("Нет ошибки при добавлении пользователя с существующей почтой", e3.getMessage(),
+        assertThat("Нет ошибки при неверном id", e3.getMessage(),
                 equalTo("Вещь с id 99 не найдена"));
 
     }

@@ -11,6 +11,7 @@ import ru.practicum.shareit.booking.model.AccessLevel;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.booking.model.Status;
+import ru.practicum.shareit.exception.ObjectNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -23,6 +24,7 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Transactional
 @SpringBootTest
@@ -39,10 +41,23 @@ class BookingServiceImplTest {
         UserDto bookerDto = createUserDto("booker", "booker@mail.ru");
         ItemDto itemDto = createItemDto(ownerDto.getId(),"Item1", "Description for item1", true);
         BookingInputDto bookingInputDto = BookingInputDto.builder()
-                .itemId(itemDto.getId())
+                .itemId(99L)
                 .start(LocalDateTime.now().plusDays(1))
                 .end(LocalDateTime.now().plusDays(2))
                 .build();
+
+        ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+                () -> bookingService.addBooking(99L, bookingInputDto));
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
+                equalTo("Пользователь с id 99 не найден"));
+
+        ObjectNotFoundException e2 = assertThrows(ObjectNotFoundException.class,
+                () -> bookingService.addBooking(bookerDto.getId(), bookingInputDto));
+        assertThat("Нет ошибки при неверном id", e2.getMessage(),
+                equalTo("Вещь с id 99 не найдена"));
+
+        bookingInputDto.setItemId(itemDto.getId());
+
         BookingDto bookingDto = bookingService.addBooking(bookerDto.getId(), bookingInputDto);
         assertThat("Бронирование сохраняется неверно", bookingDto.getId(), notNullValue());
         assertThat("Бронирование сохраняется неверно", bookingDto.getItem().getId(),
@@ -51,7 +66,30 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void approveOrRejectBooking() {
+    void approveBooking() {
+        UserDto ownerDto = createUserDto("NameForUser1", "user@mail.ru");
+        UserDto bookerDto = createUserDto("booker", "booker@mail.ru");
+        ItemDto itemDto = createItemDto(ownerDto.getId(),"Item1", "Description for item1", true);
+        BookingInputDto bookingInputDto = BookingInputDto.builder()
+                .itemId(itemDto.getId())
+                .start(LocalDateTime.now().plusDays(1))
+                .end(LocalDateTime.now().plusDays(2))
+                .build();
+        BookingDto bookingDto = bookingService.addBooking(bookerDto.getId(), bookingInputDto);
+
+        ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+                () -> bookingService.approveOrRejectBooking(99L, bookingDto.getId(),
+                        true, AccessLevel.OWNER));
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
+                equalTo("Пользователь с id 99 не найден"));
+
+        BookingDto bookingDtoApproved = bookingService.approveOrRejectBooking(ownerDto.getId(), bookingDto.getId(),
+                true, AccessLevel.OWNER);
+        assertThat("Статус бронирования не изменился", bookingDtoApproved.getStatus(), equalTo(Status.APPROVED));
+    }
+
+    @Test
+    void rejectBooking() {
         UserDto ownerDto = createUserDto("NameForUser1", "user@mail.ru");
         UserDto bookerDto = createUserDto("booker", "booker@mail.ru");
         ItemDto itemDto = createItemDto(ownerDto.getId(),"Item1", "Description for item1", true);
@@ -62,8 +100,8 @@ class BookingServiceImplTest {
                 .build();
         BookingDto bookingDto = bookingService.addBooking(bookerDto.getId(), bookingInputDto);
         BookingDto bookingDtoApproved = bookingService.approveOrRejectBooking(ownerDto.getId(), bookingDto.getId(),
-                true, AccessLevel.OWNER);
-        assertThat("Статус бронирования не изменился", bookingDtoApproved.getStatus(), equalTo(Status.APPROVED));
+                false, AccessLevel.OWNER);
+        assertThat("Статус бронирования не изменился", bookingDtoApproved.getStatus(), equalTo(Status.REJECTED));
     }
 
     @Test
@@ -77,6 +115,17 @@ class BookingServiceImplTest {
                 .end(LocalDateTime.now().plusDays(2))
                 .build();
         BookingDto bookingDto = bookingService.addBooking(bookerDto.getId(), bookingInputDto);
+
+        ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+                () -> bookingService.getBookingById(bookingDto.getId(), 99L, AccessLevel.BOOKER));
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
+                equalTo("Пользователь с id 99 не найден"));
+
+        ObjectNotFoundException e2 = assertThrows(ObjectNotFoundException.class,
+                () -> bookingService.getBookingById(99L, bookerDto.getId(), AccessLevel.BOOKER));
+        assertThat("Нет ошибки при неверном id", e2.getMessage(),
+                equalTo("Бронирование с id 99 не найдено"));
+
         Booking bookingInDB = bookingService.getBookingById(bookingDto.getId(), bookerDto.getId(), AccessLevel.BOOKER);
         assertThat("Бронирование возвращается неверно", bookingDto.getId(), equalTo(bookingInDB.getId()));
     }
@@ -92,6 +141,12 @@ class BookingServiceImplTest {
                 .end(LocalDateTime.now().plusDays(2))
                 .build();
         BookingDto bookingDto = bookingService.addBooking(bookerDto.getId(), bookingInputDto);
+
+        ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+                () -> bookingService.getBookingsOfCurrentUser(State.WAITING, 99L, 0, 10));
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
+                equalTo("Пользователь с id 99 не найден"));
+
         List<BookingDto> bookings = bookingService.getBookingsOfCurrentUser(State.WAITING, bookerDto.getId(), 0, 10);
         assertThat("Список бронирования текущего пользователя возвращается некорректно", bookings.size(),
                 equalTo(1));
@@ -110,6 +165,9 @@ class BookingServiceImplTest {
         bookings = bookingService.getBookingsOfCurrentUser(State.CURRENT, bookerDto.getId(), 0, 10);
         assertThat("Список бронирования текущего пользователя возвращается некорректно", bookings.size(),
                 equalTo(0));
+        bookings = bookingService.getBookingsOfCurrentUser(State.ALL, bookerDto.getId(), 0, 10);
+        assertThat("Список бронирования текущего пользователя возвращается некорректно", bookings.size(),
+                equalTo(1));
     }
 
     @Test
@@ -123,6 +181,12 @@ class BookingServiceImplTest {
                 .end(LocalDateTime.now().plusDays(2))
                 .build();
         BookingDto bookingDto = bookingService.addBooking(bookerDto.getId(), bookingInputDto);
+
+        ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+                () -> bookingService.getBookingsOfOwner(State.WAITING, 99L, 0, 10));
+        assertThat("Нет ошибки при неверном id", e.getMessage(),
+                equalTo("Пользователь с id 99 не найден"));
+
         List<BookingDto> bookings = bookingService.getBookingsOfOwner(State.WAITING, ownerDto.getId(), 0, 10);
         assertThat("Список бронирования владельца возвращается некорректно", bookings.size(),
                 equalTo(1));
@@ -141,6 +205,9 @@ class BookingServiceImplTest {
         bookings = bookingService.getBookingsOfOwner(State.CURRENT, ownerDto.getId(), 0, 10);
         assertThat("Список бронирования владельца возвращается некорректно", bookings.size(),
                 equalTo(0));
+        bookings = bookingService.getBookingsOfOwner(State.ALL, ownerDto.getId(), 0, 10);
+        assertThat("Список бронирования владельца возвращается некорректно", bookings.size(),
+                equalTo(1));
     }
 
     UserDto createUserDto(String name, String email) {

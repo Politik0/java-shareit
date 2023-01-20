@@ -11,6 +11,7 @@ import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -27,9 +28,20 @@ class UserServiceTest {
     }
 
     @Test
+    void updateUser() {
+        Mockito
+                .when(mockUserRepository.findById(anyLong()))
+                .thenThrow(new ObjectNotFoundException("Пользователь с id 1 не найден"));
+
+        ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+                () -> userService.getUserById(1));
+        assertEquals("Пользователь с id 1 не найден", e.getMessage(), "не появляется ошибка");
+    }
+
+    @Test
     void getUserByIdShouldThrowException() {
         Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
+                .when(mockUserRepository.findById(anyLong()))
                 .thenThrow(new ObjectNotFoundException("Пользователь с id 1 не найден"));
         ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
                 () -> userService.getUserById(1));

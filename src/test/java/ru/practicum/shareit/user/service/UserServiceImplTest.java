@@ -55,6 +55,18 @@ class UserServiceImplTest {
     }
 
     @Test
+    void updateUserEmail() {
+        UserDto userDto = createUserDto("NameForUser1", "user@mail.ru");
+        UserDto userSaved1 = userService.addUser(userDto);
+        UserDto userDtoForUpdate = UserDto.builder().email("upd@mail.ru").build();
+
+        UserDto userSavedUpd = userService.updateUser(userSaved1.getId(), userDtoForUpdate);
+        assertThat("Имя не изменилось", userDto.getName(), equalTo(userSavedUpd.getName()));
+        assertThat("Id равен null", userSavedUpd.getId(), notNullValue());
+        assertThat("Почта равна null", userSavedUpd.getEmail(), equalTo("upd@mail.ru"));
+    }
+
+    @Test
     void getUserById() {
         UserDto userDto = createUserDto("NameForUser1", "user@mail.ru");
         UserDto userSaved = userService.addUser(userDto);

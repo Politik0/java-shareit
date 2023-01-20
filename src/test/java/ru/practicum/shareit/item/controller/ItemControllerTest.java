@@ -132,7 +132,7 @@ class ItemControllerTest {
 
     @Test
     void removeItem() throws Exception {
-        mvc.perform(get("/items/{itemId}", 1)
+        mvc.perform(delete("/items/{itemId}", 1)
                         .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk());
     }
