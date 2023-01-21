@@ -49,4 +49,25 @@ class ItemRepositoryTest {
                 .collect(Collectors.toList());
         assertEquals(items.get(0).getName(), "Name");
     }
+
+    @Test
+    void save() {
+        User user = User.builder()
+                .name("userName")
+                .email("name@mail.ru")
+                .build();
+        assertEquals(user.getId(), 0);
+        em.persist(user);
+        assertNotEquals(user.getId(), 0);
+
+        Item item = Item.builder()
+                .userId(user.getId())
+                .name("Name")
+                .description("Descr for item")
+                .available(true)
+                .build();
+        assertEquals(item.getId(), 0);
+        repository.save(item);
+        assertNotEquals(item.getId(), 0);
+    }
 }

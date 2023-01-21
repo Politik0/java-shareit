@@ -12,7 +12,7 @@ public interface ItemRequestRepository extends JpaRepository<ItemRequest, Long> 
 
     Page<ItemRequest> findAllByAuthorIdNot(Pageable pageable, long authorId);
 
-    ItemRequest findById(long id);
+    Optional<ItemRequest> findById(long id);
 
     Optional<ItemRequest> findItemRequestById(long id);
 }

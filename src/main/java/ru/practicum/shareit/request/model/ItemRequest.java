@@ -18,7 +18,7 @@ public class ItemRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @ToString.Exclude
+    //@ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "author_id")
     private User author;

@@ -44,7 +44,6 @@ class ItemServiceImplTest {
     void addItem() {
         UserDto userDtoInDB = createUserDto("NameForUser1", "user@mail.ru");
         ItemDto itemDto = createItemDto("Item1", "Description for item1", true);
-
         ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
                 () -> itemService.addItem(99L, itemDto));
         assertThat("Нет ошибки при неверном id", e.getMessage(),
