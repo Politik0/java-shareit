@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Objects;
 
 @RestControllerAdvice
@@ -15,7 +16,7 @@ public class ErrorHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({MethodArgumentNotValidException.class, ObjectNotAvailableException.class,
-            InvalidDataException.class, IllegalArgumentException.class})
+            InvalidDataException.class, IllegalArgumentException.class, ConstraintViolationException.class})
     public ErrorResponse handleNotValidArgumentException(Exception e) {
         log.warn(e.getClass().getSimpleName(), e);
         String message;
