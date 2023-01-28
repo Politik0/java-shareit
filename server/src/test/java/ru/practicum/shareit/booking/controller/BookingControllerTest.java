@@ -149,7 +149,7 @@ class BookingControllerTest {
         when(converter.convert(anyString()))
                 .thenReturn(State.FUTURE);
 
-        mvc.perform(get("/bookings?state={state}&from={from}&size={size}", "ALL", 0, 1)
+        mvc.perform(get("/bookings")
                         .header("X-Sharer-User-Id", 2))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(2))
@@ -179,7 +179,7 @@ class BookingControllerTest {
         when(converter.convert(anyString()))
                 .thenReturn(State.FUTURE);
 
-        mvc.perform(get("/bookings/owner?state={state}&from={from}&size={size}", "ALL", 0, 1)
+        mvc.perform(get("/bookings/owner")
                         .header("X-Sharer-User-Id", 2))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(2))

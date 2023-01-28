@@ -121,7 +121,7 @@ class ItemControllerTest {
         when(itemService.searchItems(anyString(), anyInt(), anyInt()))
                 .thenReturn(items);
 
-        mvc.perform(get("/items/search?text={text}&from={from}&size={size}", "Descr", 0, 1))
+        mvc.perform(get("/items/search?text={text}", "Descr"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(1))
                 .andExpect(jsonPath("$.[0].id").value(items.get(0).getId()))

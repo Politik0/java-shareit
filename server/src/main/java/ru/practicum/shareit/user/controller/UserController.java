@@ -8,6 +8,7 @@ import ru.practicum.shareit.logger.Logger;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -17,7 +18,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public UserDto addUser(@RequestBody UserDto userDto) throws DataExistException {
+    public UserDto addUser(@Valid @RequestBody UserDto userDto) throws DataExistException {
         Logger.logRequest(HttpMethod.POST, "/users", userDto.toString());
         return userService.addUser(userDto);
     }
